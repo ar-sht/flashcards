@@ -10,16 +10,16 @@ class HomeDirectory(ttk.Frame):
 
         ttk.Label(self, text='Flashcards!', font=('TkDefaultFont', 48, 'bold')).grid(row=0, sticky='ew')
 
-        options_frame = ttk.Labelframe(self, text='What would you like to do?')
+        options_frame = ttk.Frame(self)
         option_labels = ('Create', 'Load', 'About')
         for option in option_labels:
-            ttk.Button(
+            tk.Button(
                 options_frame, text=option,
-                command=lambda *_: self.event_generate(f'<<Get{option}Page>>')
-            ).grid(sticky='ew')
-        options_frame.grid(row=1, sticky='ew')
+                command=lambda *_: self.event_generate(f'<<Get{option}Page>>'),
+                bg='#88bbcc', font=('TkDefaultFont', 24, 'bold'), width=10
+            ).pack(ipady=5, pady=10)
+        options_frame.grid(row=1, sticky='nsew', pady=20)
 
 
-root = tk.Tk()
-HomeDirectory(root).pack()
-root.mainloop()
+class CreateSetView(ttk.Frame):
+    pass
