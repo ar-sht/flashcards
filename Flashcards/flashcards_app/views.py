@@ -1,25 +1,35 @@
 import tkinter as tk
 from tkinter import ttk
+from . import widgets as w
 
 
-class HomeDirectory(ttk.Frame):
-    """The home page from which you can do the stuffs"""
-    def __init__(self, parent, *args, **kwargs):
+class CreateView(tk.Frame):
+    def __init__(self, parent, num_entries: tk.IntVar, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        self.configure(padding=(100, 25))
+        self.num_entries = num_entries
+        self.term_vars = []
+        self.def_vars = []
 
-        ttk.Label(self, text='Flashcards!', font=('TkDefaultFont', 48, 'bold')).grid(row=0, sticky='ew')
+        self.add_button_frame = ttk.Frame(self)
+        self.add_button = ttk.Button(self.add_button_frame, text='Add Card', command=self._add_entry)
+        self.add_button.grid()
+        self.add_button_frame.grid(row=99, column=0, pady=(15, 5))
 
-        options_frame = ttk.Frame(self)
-        option_labels = ('Create', 'Load', 'About')
-        for option in option_labels:
-            tk.Button(
-                options_frame, text=option,
-                command=lambda *_: self.event_generate(f'<<Get{option}Page>>'),
-                bg='#88bbcc', font=('TkDefaultFont', 24, 'bold'), width=10
-            ).pack(ipady=5, pady=10)
-        options_frame.grid(row=1, sticky='nsew', pady=20)
+        self.columnconfigure(0, weight=1)
 
-
-class CreateSetView(ttk.Frame):
-    pass
+    def _add_entry(self):
+        entry_frame = ttk.Frame(self)
+        ttk.Label(entry_frame, text=f"Card {self.num_entries.get() + 1}").grid(row=0, column=0, sticky='ew')
+        self.term_vars.append(tk.StringVar())
+        self.def_vars.append(tk.StringVar())
+        w.CardInput(
+            entry_frame, term_variable=self.term_vars[self.num_entries.get()],
+            def_variable=self.def_vars[self.num_entries.get()]
+        ).grid(row=0, column=1)
+        self.event_generate('<<CardEntryAdded>>')
+        entry_frame.grid(
+            row=self.num_entries.get(), column=0, sticky=(tk.W + tk.E),
+            pady=(15, 0), padx=10
+        )
+        for i in range(3):
+            entry_frame.columnconfigure(i, weight=1)
