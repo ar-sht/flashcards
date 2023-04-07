@@ -11,6 +11,8 @@ class Application(tk.Tk):
         self.terms = []
         self.defs = []
 
+        self.wm_geometry('1000x600')
+
         self.title("Flashcards!")
         self.columnconfigure(0, weight=1)
 
@@ -21,9 +23,17 @@ class Application(tk.Tk):
         self.num_entries = tk.IntVar(value=0)
         self.creation = v.CreateView(self, num_entries=self.num_entries)
         self.creation.bind('<<CardEntryAdded>>', self._on_entry_added)
+        self.creation.bind('<<CardEntryRemoved>>', self._on_entry_removed)
+        self.creation.deploy()
         self.notebook.add(self.creation, text='Create')
 
     def _on_entry_added(self, *_):
         self.num_entries.set(value=self.num_entries.get() + 1)
         self.terms = [term_var.get() for term_var in self.creation.term_vars]
         self.defs = [def_var.get() for def_var in self.creation.def_vars]
+        print(self.terms)
+
+    def _on_entry_removed(self, *_):
+        self.terms = [term_var.get() for term_var in self.creation.term_vars]
+        self.defs = [def_var.get() for def_var in self.creation.def_vars]
+        print(self.terms)

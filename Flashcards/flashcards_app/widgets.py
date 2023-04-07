@@ -22,27 +22,13 @@ class BoundText(tk.Text):
             self.edit_modified(False)
 
 
-class CardInput(tk.Frame):
-    def __init__(self, *args, term_variable=None, def_variable=None, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.term_variable = term_variable or tk.StringVar()
-        self.def_variable = def_variable or tk.StringVar()
-
-        self.term_input = LabelInput(
-            self, label='Term', var=term_variable,
-            input_class=ttk.Entry
-        )
-        self.def_input = LabelInput(
-            self, label='Definition', var=def_variable,
-            input_class=ttk.Entry
-        )
-
-        self.term_input.grid(row=0, column=0, sticky='ew')
-        self.def_input.grid(row=0, column=1, sticky='ew')
+class InputRemoveButton(ttk.Button):
+    def __init__(self, parent, *args, id, **kwargs):
+        super().__init__(parent, *args, text='Remove', width=6, **kwargs)
+        self.id = id
 
 
-class LabelInput(tk.Frame):
+class LabelInput(ttk.Frame):
     def __init__(
             self, parent, label, var, input_class=None,
             input_args=None, label_args=None, **kwargs
