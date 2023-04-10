@@ -59,3 +59,22 @@ class LabelInput(ttk.Frame):
     
     def grid(self, sticky=(tk.W + tk.E), **kwargs):
         super().grid(sticky=sticky, **kwargs)
+
+
+class RadioGroup(ttk.Frame):
+    def __init__(
+            self, *args, variable=None, values=None,
+            button_args=None, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.variable = variable or tk.StringVar()
+        self.values = values or list()
+        self.button_args = button_args or dict()
+        for v in self.values:
+            button = ttk.Radiobutton(
+                self, value=v, text=v,
+                variable=self.variable, **self.button_args
+            )
+            button.pack(
+                side=tk.LEFT, ipadx=10, ipady=2, expand=True, fill='x'
+            )

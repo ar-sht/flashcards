@@ -1,11 +1,10 @@
 import os
-import csv
 from pathlib import Path
 
 
 class CSVModel:
-    def __init__(self, filename='Untitled'):
-        self.filename = filename + '.csv'
+    def __init__(self, filename=''):
+        self.filename = filename
 
     def save_set(self, data):
         file = Path(self.filename)
@@ -20,19 +19,12 @@ class CSVModel:
             msg = f'Permission denied accessing file: {self.filename}'
             raise PermissionError(msg)
 
-        i = 0
-        if self.filename == 'Untitled':
-            while file_exists:
-                self.filename = self.filename[:-4] + f' ({i})' + self.filename[-4:]
-                file = Path(self.filename)
-                i += 1
+        terms = data['Terms']
+        definitions = data['Definitions']
 
-        newfile = not file.exists()
-        with open(file, 'a', newline='') as fh:
-            csvwriter = csv.DictWriter(fh, fieldnames=['Terms', 'Definitions'])
-            if newfile:
-                csvwriter.writeheader()
-            csvwriter.writerow(data)
+        with open(file, 'w', encoding='utf-8') as fh:
+            for i in range(len(terms)):
+                fh.write(f'{terms[i]},{definitions[i]}\n')
 
     def load_set(self):
         file = Path(self.filename)
@@ -40,6 +32,11 @@ class CSVModel:
         if not os.access(file, os.F_OK):
             raise PermissionError(f'Could not find set: {self.filename}')
 
-        with open(file, 'r') as fh:
-            csvreader = csv.DictReader(fh, fieldnames=['Prompts', 'Responses'])
-            return dict(csvreader)
+        with open(file, 'r', encoding='utf-8') as fh:
+            terms = []
+            definitions = []
+            for line in fh.readlines():
+                line_data = line.split(',')
+                terms.append(line_data[0].strip())
+                definitions.append(line_data[1].strip())
+        return zip(terms, definitions)

@@ -4,13 +4,46 @@ from . import widgets as w
 from tkinter.simpledialog import Dialog
 
 
+class ChoiceDialog(Dialog):
+    def __init__(self, parent, title):
+        self.choice = tk.StringVar()
+        super().__init__(parent, title=title)
+
+    def body(self, frame):
+        ttk.Label(frame, text='Load existing set or create new one?').grid(row=0)
+        choice_frame = ttk.Frame(
+            frame
+        )
+        w.RadioGroup(
+            choice_frame, variable=self.choice, values=['Load', 'Create']
+        ).grid(row=0)
+        choice_frame.grid(row=1, pady=10)
+
+    def buttonbox(self):
+        box = ttk.Frame(self)
+        ttk.Button(
+            box, text='Cancel', command=self.cancel
+        ).grid(padx=5, pady=5)
+
+        ttk.Button(
+            box, text='Ok', command=self.ok, default=tk.ACTIVE
+        ).grid(row=0, column=1, padx=5, pady=5)
+
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.cancel)
+
+        box.pack()
+
+
 class CreateView(ttk.Frame):
-    def __init__(self, parent, name_var: tk.StringVar, num_entries: tk.IntVar, *args, **kwargs):
+    def __init__(
+            self, parent, term_vars: [tk.StringVar], def_vars: [tk.StringVar],
+            name_var: tk.StringVar, num_entries: tk.IntVar, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+        self.term_vars = term_vars
+        self.def_vars = def_vars
         self.name_var = name_var
         self.num_entries = num_entries
-        self.term_vars = []
-        self.def_vars = []
 
         self.name_inp_frame = ttk.Frame(self)
         w.LabelInput(
@@ -22,7 +55,7 @@ class CreateView(ttk.Frame):
         self.add_button.grid(row=99, pady=(15, 0))
 
         self.buttons_frame = ttk.Frame(self)
-        self.clear_button = ttk.Button(self.buttons_frame, text='Clear', command=self.reset)
+        self.clear_button = ttk.Button(self.buttons_frame, text='Clear', command=self._reset)
         self.clear_button.grid(row=0, column=0)
         ttk.Frame(self.buttons_frame).grid(row=0, column=1)
         self.save_button = ttk.Button(self.buttons_frame, text='Save', command=self._on_save)
@@ -35,38 +68,43 @@ class CreateView(ttk.Frame):
         self.columnconfigure(0, weight=1)
 
     def _add_entry(self):
-        if self.num_entries.get() >= 97:
+        self.event_generate('<<CardEntryAdd>>')
+
+        if self.num_entries.get() >= 98:
             return
+
         entry_frame = ttk.Frame(self)
+
         ttk.Frame(entry_frame).grid(row=0, column=1)
         ttk.Frame(entry_frame).grid(row=0, column=3)
         ttk.Frame(entry_frame).grid(row=0, column=5)
-        ttk.Label(entry_frame, text=f"Card {self.num_entries.get() + 1}").grid(row=0, column=0, sticky='ew')
-        if len(self.term_vars) < self.num_entries.get() + 1:
-            self.term_vars.append(tk.StringVar())
-        if len(self.def_vars) < self.num_entries.get() + 1:
-            self.def_vars.append(tk.StringVar())
+
+        ttk.Label(entry_frame, text=f"Card {self.num_entries.get()}").grid(row=0, column=0, sticky='ew')
+
         w.LabelInput(
-            entry_frame, var=self.term_vars[self.num_entries.get()],
+            entry_frame, var=self.term_vars[self.num_entries.get() - 1],
             label='Term', input_class=ttk.Entry
         ).grid(row=0, column=2)
         w.LabelInput(
-            entry_frame, var=self.def_vars[self.num_entries.get()],
+            entry_frame, var=self.def_vars[self.num_entries.get() - 1],
             label='Definition', input_class=ttk.Entry
         ).grid(row=0, column=4)
+
         temp_button = w.InputRemoveButton(
-            entry_frame, id=self.num_entries.get() + 1
+            entry_frame, id=self.num_entries.get()
         )
         temp_button.configure(command=lambda: self._remove_entry(temp_button))
         temp_button.grid(row=0, column=6)
+
         entry_frame.columnconfigure(1, minsize=20)
         entry_frame.columnconfigure(3, minsize=20)
         entry_frame.columnconfigure(5, minsize=20)
-        self.event_generate('<<CardEntryAdded>>')
+
         entry_frame.grid(
-            row=self.num_entries.get() + 1, column=0, sticky=(tk.W + tk.E),
+            row=self.num_entries.get(), column=0, sticky=(tk.W + tk.E),
             pady=(15, 0), padx=10
         )
+
         for i in range(7):
             if i == 3:
                 entry_frame.columnconfigure(i, weight=1)
@@ -75,26 +113,26 @@ class CreateView(ttk.Frame):
 
     def _remove_entry(self, entry: w.InputRemoveButton):
         for child in self.grid_slaves():
-            if entry.id < int(child.grid_info()['row']) < 99:
+            row_num = int(child.grid_info()["row"])
+            if row_num == entry.id:  # remove the row corresponding to button
                 child.grid_remove()
-        proper_num = self.num_entries.get() - 1
-        self.term_vars.pop(entry.id - 1)
-        self.def_vars.pop(entry.id - 1)
-        self.event_generate('<<CardEntryRemoved>>')
-        self.num_entries.set(entry.id - 1)
-        for i in range(entry.id - 1, proper_num):
-            self._add_entry()
+            if row_num > entry.id:  # bring all other rows down one
+                child.grid_configure(row=row_num - 1)
+                for grandchild in child.grid_slaves():
+                    if isinstance(grandchild, ttk.Label):
+                        grandchild.configure(text=f'Card {row_num - 1}')
+
+        try:
+            self.master.remove_entry(entry.id)
+        except ValueError:
+            raise Exception('Master is missing function remove_entry')
 
     def _on_save(self):
         self.event_generate('<<SaveCardSet>>')
 
-    def deploy(self):
-        self._add_entry()
-        self._add_entry()
-
-    def reset(self):
-        for term_var in self.term_vars:
-            term_var.set(value="")
-        for def_var in self.def_vars:
-            def_var.set(value="")
+    def _reset(self):
         self.event_generate('<<CardEntriesReset>>')
+
+    def deploy(self, num):
+        for i in range(num):
+            self._add_entry()
