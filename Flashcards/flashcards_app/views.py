@@ -55,15 +55,19 @@ class CreateView(ttk.Frame):
         self.add_button.grid(row=99, pady=(15, 0))
 
         self.buttons_frame = ttk.Frame(self)
-        self.clear_button = ttk.Button(self.buttons_frame, text='Clear', command=self._reset)
-        self.clear_button.grid(row=0, column=0)
-        ttk.Frame(self.buttons_frame).grid(row=0, column=1)
+
+        self.load_button = ttk.Button(self.buttons_frame, text='Load', command=self._on_load)
+        self.load_button.pack(side=tk.LEFT)
+
+        ttk.Frame(self.buttons_frame).pack(side=tk.LEFT, expand=True, fill='x')
+
         self.save_button = ttk.Button(self.buttons_frame, text='Save', command=self._on_save)
-        self.save_button.grid(row=0, column=2)
-        self.buttons_frame.grid(row=100, sticky='e', padx=30, pady=(15, 0))
-        self.buttons_frame.columnconfigure(1, minsize=10)
-        self.buttons_frame.columnconfigure(0, weight=1)
-        self.buttons_frame.columnconfigure(0, weight=1)
+        self.save_button.pack(side=tk.RIGHT, padx=15)
+
+        self.clear_button = ttk.Button(self.buttons_frame, text='Clear', command=self._reset)
+        self.clear_button.pack(side=tk.RIGHT)
+
+        self.buttons_frame.grid(row=100, sticky='ew', padx=30, pady=(15, 0))
 
         self.columnconfigure(0, weight=1)
 
@@ -129,6 +133,9 @@ class CreateView(ttk.Frame):
 
     def _on_save(self):
         self.event_generate('<<SaveCardSet>>')
+
+    def _on_load(self):
+        self.event_generate('<<LoadCardSet>>')
 
     def _reset(self):
         self.event_generate('<<CardEntriesReset>>')

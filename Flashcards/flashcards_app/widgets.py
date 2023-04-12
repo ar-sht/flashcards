@@ -28,6 +28,18 @@ class InputRemoveButton(ttk.Button):
         self.id = id
 
 
+class FlashCard(ttk.Frame):
+    def __init__(
+            self, parent, variable,
+            label_args, *args, **kwargs
+    ):
+        super().__init__(parent, *args, **kwargs)
+        self.variable = variable or tk.StringVar()
+        self.label_args= label_args or dict()
+        self.term_label = ttk.Label(self, textvariable=self.variable, **self.label_args)
+        self.term_label.pack(expand=True, fill='both')
+
+
 class LabelInput(ttk.Frame):
     def __init__(
             self, parent, label, var, input_class=None,

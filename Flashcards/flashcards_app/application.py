@@ -43,6 +43,7 @@ class Application(tk.Tk):
         self.creation.bind('<<CardEntryAdd>>', self._on_add_entry)
         self.creation.bind('<<CardEntriesReset>>', self._reset_vars)
         self.creation.bind('<<SaveCardSet>>', self._on_save)
+        self.creation.bind('<<LoadCardSet>>', self._on_load_chosen)
         self.creation.deploy(self.starting_num)
         self.notebook.add(self.creation, text='Create')
 
