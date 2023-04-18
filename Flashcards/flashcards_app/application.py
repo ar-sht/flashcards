@@ -43,9 +43,14 @@ class Application(tk.Tk):
         self.creation.bind('<<CardEntryAdd>>', self._on_add_entry)
         self.creation.bind('<<CardEntriesReset>>', self._reset_vars)
         self.creation.bind('<<SaveCardSet>>', self._on_save)
-        self.creation.bind('<<LoadCardSet>>', self._on_load_chosen)
         self.creation.deploy(self.starting_num)
         self.notebook.add(self.creation, text='Create')
+
+        self.review = v.ReviewView(
+            self, term_vars=self.term_vars, def_vars=self.def_vars,
+            name_var=self.name_var
+        )
+        self.notebook.add(self.review, text='Review')
 
     def _on_add_entry(self, *_):
         self.num_entries.set(self.num_entries.get() + 1)
@@ -88,6 +93,8 @@ class Application(tk.Tk):
         )
 
         if filename:
+            self.term_vars = []
+            self.def_vars = []
             self.model = m.CSVModel(filename=filename)
             data = self.model.load_set()
             for term, definition in data:

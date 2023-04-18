@@ -56,9 +56,6 @@ class CreateView(ttk.Frame):
 
         self.buttons_frame = ttk.Frame(self)
 
-        self.load_button = ttk.Button(self.buttons_frame, text='Load', command=self._on_load)
-        self.load_button.pack(side=tk.LEFT)
-
         ttk.Frame(self.buttons_frame).pack(side=tk.LEFT, expand=True, fill='x')
 
         self.save_button = ttk.Button(self.buttons_frame, text='Save', command=self._on_save)
@@ -134,12 +131,36 @@ class CreateView(ttk.Frame):
     def _on_save(self):
         self.event_generate('<<SaveCardSet>>')
 
-    def _on_load(self):
-        self.event_generate('<<LoadCardSet>>')
-
     def _reset(self):
         self.event_generate('<<CardEntriesReset>>')
 
     def deploy(self, num):
         for i in range(num):
             self._add_entry()
+
+
+class ReviewView(ttk.Frame):
+    def __init__(
+            self, parent, term_vars: [tk.StringVar], def_vars: [tk.StringVar],
+            name_var: tk.StringVar, *args, **kwargs
+    ):
+        super().__init__(parent,  *args, **kwargs)
+        self.term_vars = term_vars
+        self.def_vars = def_vars
+        self.name_var = name_var
+        self._cur_card_index = 0
+
+        ttk.Label(self, textvariable=self.name_var).grid(row=0, column=0)
+
+        self.content_frame = ttk.Frame(self)
+        ttk.Button(self.content_frame, text='Prev', command=self._on_prev).grid(row=1, column=0)
+        self.cur_card = w.Flashcard(self.content_frame, variable=self.term_vars[self._cur_card_index])
+        self.cur_card.grid(row=0, column=1, rowspan=3)
+        ttk.Button(self.content_frame, text='Next', command=self._on_next).grid(row=1, column=2)
+        self.content_frame.grid(row=1, column=0)
+
+    def _on_prev(self, *_):
+        pass
+
+    def _on_next(self, *_):
+        pass
