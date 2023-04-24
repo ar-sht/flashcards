@@ -149,18 +149,49 @@ class ReviewView(ttk.Frame):
         self.def_vars = def_vars
         self.name_var = name_var
         self._cur_card_index = 0
+        self._var_type = 'term'
+        self.all_vars = {'term': self.term_vars, 'definition': self.def_vars}
 
-        ttk.Label(self, textvariable=self.name_var).grid(row=0, column=0)
+        ttk.Label(self, textvariable=self.name_var, font=('TkDefaultFont', 36))\
+            .grid(row=0, column=0, sticky='ew', pady=(0, 15), padx=(200, 0))
 
         self.content_frame = ttk.Frame(self)
+
         ttk.Button(self.content_frame, text='Prev', command=self._on_prev).grid(row=1, column=0)
-        self.cur_card = w.Flashcard(self.content_frame, variable=self.term_vars[self._cur_card_index])
+
+        self.cur_card = w.Flashcard(
+            self.content_frame, variable=self.all_vars[self._var_type][self._cur_card_index],
+            label_args={'font': ('TkDefaultFont', 24)}
+        )
         self.cur_card.grid(row=0, column=1, rowspan=3)
-        ttk.Button(self.content_frame, text='Next', command=self._on_next).grid(row=1, column=2)
-        self.content_frame.grid(row=1, column=0)
+
+        ttk.Button(self.content_frame, text='Flip', command=self._on_flip).grid(row=4, column=1)
+
+        ttk.Button(self.content_frame, text='Next', command=self._on_next).grid(row=1, column=2, pady=(10, 0))
+
+        self.content_frame.columnconfigure(1, weight=1, minsize=200)
+        self.content_frame.grid(row=1, column=0, sticky='ew', padx=200)
+
+        self.columnconfigure(0, weight=1)
 
     def _on_prev(self, *_):
-        pass
+        if self._cur_card_index > 0:
+            self._cur_card_index -= 1
+        self._regen_card()
 
     def _on_next(self, *_):
-        pass
+        if self._cur_card_index < len(self.all_vars[self._var_type]) - 1:
+            self._cur_card_index += 1
+        self._regen_card()
+
+    def _on_flip(self, *_):
+        self._var_type = 'term' if self._var_type == 'definition' else 'definition'
+        self._regen_card()
+
+    def _regen_card(self):
+        self.cur_card.destroy()
+        self.cur_card = w.Flashcard(
+            self.content_frame, variable=self.all_vars[self._var_type][self._cur_card_index],
+            label_args={'font': ('TkDefaultFont', 24)}
+        )
+        self.cur_card.grid(row=0, column=1, rowspan=3)

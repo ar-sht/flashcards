@@ -36,8 +36,8 @@ class Flashcard(ttk.Frame):
         super().__init__(parent, *args, **kwargs)
         self.variable = variable or tk.StringVar()
         self.label_args = label_args or dict()
-        self.term_label = ttk.Label(self, textvariable=self.variable, **self.label_args)
-        self.term_label.pack(expand=True, fill='both')
+        self.label = ttk.Label(self, textvariable=self.variable, **self.label_args)
+        self.label.pack(expand=True, fill='both', ipady=5, ipadx=5)
 
 
 class LabelInput(ttk.Frame):
