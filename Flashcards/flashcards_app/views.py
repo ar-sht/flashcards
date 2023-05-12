@@ -37,7 +37,7 @@ class ChoiceDialog(Dialog):
 
 class CreateView(ttk.Frame):
     def __init__(
-            self, parent, term_vars: [tk.StringVar], def_vars: [tk.StringVar],
+            self, parent, term_vars: list[tk.StringVar], def_vars: list[tk.StringVar],
             name_var: tk.StringVar, num_entries: tk.IntVar, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self.term_vars = term_vars
@@ -141,19 +141,18 @@ class CreateView(ttk.Frame):
 
 class ReviewView(ttk.Frame):
     def __init__(
-            self, parent, term_vars: [tk.StringVar], def_vars: [tk.StringVar],
+            self, parent, term_vars: list[tk.StringVar], def_vars: list[tk.StringVar],
             name_var: tk.StringVar, *args, **kwargs
     ):
         super().__init__(parent,  *args, **kwargs)
-        self.term_vars = term_vars
-        self.def_vars = def_vars
         self.name_var = name_var
         self._cur_card_index = 0
         self._var_type = 'term'
-        self.all_vars = {'term': self.term_vars, 'definition': self.def_vars}
+        self.all_vars = {'term': term_vars, 'definition': def_vars}
 
-        ttk.Label(self, textvariable=self.name_var, font=('TkDefaultFont', 36))\
-            .grid(row=0, column=0, sticky='ew', pady=(0, 15), padx=(200, 0))
+        ttk.Label(
+            self, textvariable=self.name_var, font=('TkDefaultFont', 36)
+        ).grid(row=0, column=0, sticky='ew', pady=(0, 15), padx=(200, 0))
 
         self.content_frame = ttk.Frame(self)
 
@@ -195,3 +194,41 @@ class ReviewView(ttk.Frame):
             label_args={'font': ('TkDefaultFont', 24)}
         )
         self.cur_card.grid(row=0, column=1, rowspan=3)
+
+
+class QuizView(ttk.Frame):
+    def __init__(
+            self, parent, term_vars: list[tk.StringVar], def_vars: list[tk.StringVar],
+            warnings: list[tk.StringVar], *args, **kwargs
+    ):
+        super().__init__(parent, *args, **kwargs)
+        self.term_vars = term_vars
+        self.def_vars = def_vars
+        self.answers = [tk.StringVar(value='') for _ in def_vars]
+        self.warnings = warnings
+
+        ttk.Label(
+            self, text='Quiz Thyself', font=('TkDefaultFont', 24)
+        ).grid(row=0, column=0, sticky='ew', pady=(0, 15))
+
+        self.content_frame = ttk.Frame(self)
+        self.content_frame.grid(row=1, sticky='ew')
+        self.refresh()
+        ttk.Button(
+            self, text="Check", command=self._trigger_check
+        ).grid(row=3, pady=10)
+
+    def _render_question(self, i):
+        w.QuizQuestion(
+            self.content_frame, self.term_vars[i].get(),
+            self.answers[i], self.warnings[i].get()
+        ).pack(expand=True, fill='both')
+
+    def refresh(self):
+        for child in self.content_frame.winfo_children():
+            child.destroy()
+        for i in range(len(self.term_vars)):
+            self._render_question(i)
+
+    def _trigger_check(self, *_):
+        self.event_generate('<<AnswersSubmitted>>')

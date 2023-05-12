@@ -52,9 +52,28 @@ class Application(tk.Tk):
         )
         self.notebook.add(self.review, text='Review')
 
+        self.quiz_warnings = [tk.StringVar(value="") for _ in self.term_vars]
+        self.quiz = v.QuizView(
+            self, term_vars=self.term_vars, def_vars=self.def_vars, warnings=self.quiz_warnings
+        )
+        self.quiz.bind('<<AnswersSubmitted>>', self._on_submission)
+        self.notebook.add(self.quiz, text='Quiz')
+
+    def _on_submission(self, *_):
+        for i in range(len(self.quiz.answers)):
+            answer = self.quiz.answers[i].get()
+            from thefuzz import fuzz
+            ratio = fuzz.ratio(answer, self.def_vars[i].get())
+            if answer == "":
+                self.quiz_warnings[i].set(value="Unanswered")
+            elif ratio >= 80:
+                self.quiz_warnings[i].set(value="Correct!")
+            else:
+                self.quiz_warnings[i].set(value="Incorrect.")
+        self.quiz.refresh()
+
     def _on_add_entry(self, *_):
         self.num_entries.set(self.num_entries.get() + 1)
-        print(self.num_entries.get())
         if len(self.term_vars) < self.num_entries.get():
             self.term_vars.append(tk.StringVar())
             self.def_vars.append(tk.StringVar())
@@ -98,7 +117,6 @@ class Application(tk.Tk):
             self.model = m.CSVModel(filename=filename)
             data = self.model.load_set()
             for term, definition in data:
-                print(term, definition)
                 self.term_vars.append(tk.StringVar(value=term))
                 self.def_vars.append(tk.StringVar(value=definition))
             self.starting_num += len(self.term_vars) - 2

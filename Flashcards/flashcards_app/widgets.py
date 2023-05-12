@@ -40,27 +40,41 @@ class Flashcard(ttk.Frame):
         self.label.pack(expand=True, fill='both', ipady=5, ipadx=5)
 
 
+class QuizQuestion(ttk.Frame):
+    def __init__(
+            self, parent, question, variable, status, **kwargs
+    ):
+        super().__init__(parent, **kwargs)
+        self.variable = variable or tk.StringVar()
+        self.status = status
+        self.question = ttk.Label(self, text=question)
+        self.answer = ttk.Entry(self, textvariable=self.variable)
+        self.question.pack(expand=True, fill='both', pady=10, padx=20)
+        self.answer.pack(expand=True, fill='both', pady=5, padx=40)
+        ttk.Label(self, text=status, font=('TKDefaultFont', 8)).pack(expand=True, fill='both', pady=5)
+
+
 class LabelInput(ttk.Frame):
     def __init__(
             self, parent, label, var, input_class=None,
             input_args=None, label_args=None, **kwargs
     ):
         super().__init__(parent, **kwargs)
-        
+
         input_args = input_args or {}
         label_args = label_args or {}
-        
+
         self.variable = var
         self.variable.label_widget = self
 
         if input_class in (
-            ttk.Checkbutton, ttk.Button,
-            ttk.Radiobutton
+                ttk.Checkbutton, ttk.Button,
+                ttk.Radiobutton
         ):
             input_args['variable'] = self.variable
         else:
             input_args['textvariable'] = self.variable
-        
+
         self.input = input_class(self, **input_args)
         self.input.grid(row=0, column=0, sticky=(tk.W + tk.E))
 
@@ -68,7 +82,7 @@ class LabelInput(ttk.Frame):
         self.label.grid(row=1, column=0, sticky=(tk.W + tk.E))
 
         self.columnconfigure(0, weight=1)
-    
+
     def grid(self, sticky=(tk.W + tk.E), **kwargs):
         super().grid(sticky=sticky, **kwargs)
 
